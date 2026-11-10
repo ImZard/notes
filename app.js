@@ -121,6 +121,12 @@ function formatReminder(dateStr) {
         d.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' });
 }
 
+function formatDateTimeLocal(d) {
+    if (!d) return '';
+    const pad = (n) => String(n).padStart(2, '0');
+    return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}T${pad(d.getHours())}:${pad(d.getMinutes())}`;
+}
+
 function isOverdue(dateStr) {
     return new Date(dateStr) < new Date();
 }
@@ -369,6 +375,7 @@ function filterByLabel(labelId) {
     } else {
         updatePageTitle();
     }
+    if (isMobileView()) closeSidebar();
 }
 
 function deleteLabel(labelId) {
@@ -473,6 +480,13 @@ function saveNote() {
             const checked = item.querySelector('input[type="checkbox"]').checked;
             checklist.push({ text, checked });
         });
+
+        // Auto-save pending input item if user forgot to press 'Tambah'
+        const pendingItemText = $('#checklistInput')?.value.trim();
+        if (pendingItemText) {
+            checklist.push({ text: pendingItemText, checked: false });
+            $('#checklistInput').value = '';
+        }
     }
 
     // Reminder setup
@@ -504,6 +518,7 @@ function saveNote() {
             note.reminder = reminder;
             note.reminderRepeat = reminderRepeat;
             note.labels = selectedLabels;
+            note._notified = false;
             note.updatedAt = new Date().toISOString();
         }
         showToast('Catatan diperbarui.');
@@ -563,6 +578,7 @@ function confirmDelete(id) {
 }
 
 function deleteNote() {
+    if (!deleteNoteId) return;
     notes = notes.filter(n => n.id !== deleteNoteId);
     save();
     renderNotes();
@@ -608,16 +624,19 @@ function checkReminders() {
         const reminderTime = new Date(note.reminder);
         const diff = reminderTime - now;
 
-        if (diff <= 0 && diff > -30000 && !note._notified) {
+        if (diff <= 0 && diff > -120000 && !note._notified) {
             note._notified = true;
             showReminderAlert(note);
 
             if (note.reminderRepeat !== 'none') {
                 const next = new Date(reminderTime);
-                if (note.reminderRepeat === 'daily') next.setDate(next.getDate() + 1);
-                else if (note.reminderRepeat === 'weekly') next.setDate(next.getDate() + 7);
-                else if (note.reminderRepeat === 'monthly') next.setMonth(next.getMonth() + 1);
-                note.reminder = next.toISOString().slice(0, 16);
+                while (next <= now) {
+                    if (note.reminderRepeat === 'daily') next.setDate(next.getDate() + 1);
+                    else if (note.reminderRepeat === 'weekly') next.setDate(next.getDate() + 7);
+                    else if (note.reminderRepeat === 'monthly') next.setMonth(next.getMonth() + 1);
+                    else break;
+                }
+                note.reminder = formatDateTimeLocal(next);
                 note._notified = false;
                 save();
             }
@@ -912,7 +931,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const d = new Date();
             d.setHours(d.getHours() + 1);
             d.setMinutes(0);
-            $('#reminderDate').value = d.toISOString().slice(0, 16);
+            $('#reminderDate').value = formatDateTimeLocal(d);
         }
     });
 
@@ -1049,6 +1068,12 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // Initialize Card Tilt & Scroll Parallax
     initParallaxEffects();
+
+    // Handle PWA shortcut action (?action=new)
+    const urlParams = new URLSearchParams(window.location.search);
+    if (urlParams.get('action') === 'new') {
+        setTimeout(openNewNote, 250);
+    }
 });
 
 // ===== Parallax & Motion Engine =====

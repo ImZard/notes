@@ -1,5 +1,6 @@
 /* ===== Anti-Slop Design System: Disciplined Utility & Editorial UI ===== */
 :root {
+    color-scheme: light;
     --bg: #f8fafc;
     --surface: #ffffff;
     --surface-subtle: #f1f5f9;
@@ -47,6 +48,7 @@
 
 /* ===== Dark Mode Theme Tokens (Purposeful Slate Palette) ===== */
 [data-theme="dark"] {
+    color-scheme: dark;
     --bg: #090d16;
     --surface: #111827;
     --surface-subtle: #1e293b;
@@ -139,6 +141,19 @@
 
 [data-theme="dark"] .note-card:hover {
     border-color: #475569;
+}
+
+[data-theme="dark"] .card-action-btn.danger:hover,
+[data-theme="dark"] .delete-label:hover,
+[data-theme="dark"] .checklist-item .remove-item:hover {
+    background: rgba(239, 68, 68, 0.18);
+    color: #fca5a5;
+}
+
+[data-theme="dark"] .note-card-reminder.overdue {
+    background: #3b1115;
+    border-color: #7f1d1d;
+    color: #fca5a5;
 }
 
 *, *::before, *::after {
@@ -986,8 +1001,9 @@ body.sidebar-is-collapsed #openSidebar {
     transition: background var(--transition), transform var(--duration-fast) var(--ease-out-snappy);
 }
 
-.fab svg {
-    stroke: var(--primary-text);
+.fab svg,
+.fab svg line {
+    stroke: var(--primary-text) !important;
 }
 
 .fab:hover {
@@ -999,7 +1015,14 @@ body.sidebar-is-collapsed #openSidebar {
 }
 
 [data-theme="dark"] .fab {
+    background: #f8fafc;
+    border-color: #f8fafc;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+}
+
+[data-theme="dark"] .fab svg,
+[data-theme="dark"] .fab svg line {
+    stroke: #090d16 !important;
 }
 
 /* ===== Modal System ===== */

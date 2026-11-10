@@ -49,92 +49,76 @@ function createIcon(size) {
     const ctx = canvas.getContext('2d');
     const s = size;
 
-    // === Background ===
-    roundRect(ctx, 0, 0, s, s, s * 0.18);
-    const grad = ctx.createLinearGradient(0, 0, s, s);
-    grad.addColorStop(0, '#4f46e5');
-    grad.addColorStop(1, '#818cf8');
-    ctx.fillStyle = grad;
+    // === Anti-Slop Deep Ink Background ===
+    roundRect(ctx, 0, 0, s, s, s * 0.125);
+    ctx.fillStyle = '#0f172a';
     ctx.fill();
 
-    // === Note paper ===
-    const nw = s * 0.50, nh = s * 0.55;
-    const nx = (s - nw) / 2, ny = (s - nh) / 2 - s * 0.02;
-    const nr = s * 0.03;
+    // === Crisp Inner Border ===
+    ctx.strokeStyle = '#334155';
+    ctx.lineWidth = Math.max(1, s * 0.008);
+    roundRect(ctx, s * 0.016, s * 0.016, s * 0.968, s * 0.968, s * 0.11);
+    ctx.stroke();
 
-    // Shadow
-    ctx.fillStyle = 'rgba(0,0,0,0.12)';
-    roundRect(ctx, nx + s*0.006, ny + s*0.01, nw, nh, nr);
-    ctx.fill();
-
-    // Paper
+    // === Paper Surface ===
+    const px = s * 0.265;
+    const py = s * 0.187;
+    const pw = s * 0.47;
+    const ph = s * 0.625;
+    const pr = s * 0.024;
+    roundRect(ctx, px, py, pw, ph, pr);
     ctx.fillStyle = '#ffffff';
-    roundRect(ctx, nx, ny, nw, nh, nr);
     ctx.fill();
 
-    // Fold corner
-    const fold = s * 0.09;
-    ctx.fillStyle = '#e2e8f0';
+    // === Top Header Accent ===
+    ctx.save();
     ctx.beginPath();
-    ctx.moveTo(nx + nw - fold, ny);
-    ctx.lineTo(nx + nw, ny + fold);
-    ctx.lineTo(nx + nw - fold, ny + fold);
-    ctx.closePath();
-    ctx.fill();
+    roundRect(ctx, px, py, pw, ph, pr);
+    ctx.clip();
+    ctx.fillStyle = '#e2e8f0';
+    ctx.fillRect(px, py, pw, s * 0.055);
+    ctx.restore();
 
-    // Lines
-    ctx.strokeStyle = '#cbd5e1';
-    ctx.lineWidth = Math.max(1.5, s * 0.012);
+    // === Ruled Lines ===
     ctx.lineCap = 'round';
-    for (let i = 0; i < 3; i++) {
-        const ly = ny + nh * 0.3 + i * nh * 0.18;
-        const lx1 = nx + nw * 0.15;
-        const lx2 = i === 2 ? nx + nw * 0.6 : nx + nw * 0.85;
+
+    // Title line
+    ctx.strokeStyle = '#0f172a';
+    ctx.lineWidth = Math.max(1.5, s * 0.016);
+    ctx.beginPath();
+    ctx.moveTo(px + pw * 0.15, py + ph * 0.23);
+    ctx.lineTo(px + pw * 0.85, py + ph * 0.23);
+    ctx.stroke();
+
+    // Content lines
+    ctx.strokeStyle = '#94a3b8';
+    ctx.lineWidth = Math.max(1, s * 0.012);
+    for (let i = 1; i <= 3; i++) {
+        const ly = py + ph * (0.23 + i * 0.15);
+        const lx2 = i === 3 ? px + pw * 0.60 : px + pw * 0.85;
         ctx.beginPath();
-        ctx.moveTo(lx1, ly);
+        ctx.moveTo(px + pw * 0.15, ly);
         ctx.lineTo(lx2, ly);
         ctx.stroke();
     }
 
-    // === Pencil ===
-    ctx.save();
-    ctx.translate(nx + nw * 0.80, ny + nh * 0.88);
-    ctx.rotate(-Math.PI / 4);
-    const pw = s * 0.038, pl = s * 0.18;
-
-    // Body
-    ctx.fillStyle = '#f59e0b';
-    ctx.fillRect(-pw/2, -pl/2, pw, pl);
-    // Eraser
-    ctx.fillStyle = '#ef4444';
-    ctx.fillRect(-pw/2, -pl/2, pw, pw * 1.3);
-    // Tip
-    ctx.fillStyle = '#374151';
+    // === Check indicator circle ===
+    const cx = px + pw * 0.85;
+    const cy = py + ph * 0.81;
+    const cr = s * 0.055;
+    ctx.fillStyle = '#0f172a';
     ctx.beginPath();
-    ctx.moveTo(-pw/2, pl/2);
-    ctx.lineTo(pw/2, pl/2);
-    ctx.lineTo(0, pl/2 + pw * 1.5);
-    ctx.closePath();
-    ctx.fill();
-    ctx.restore();
-
-    // === Checkmark badge ===
-    const bx = nx + nw * 0.12, by = ny + nh * 0.65;
-    const br = s * 0.04;
-    ctx.fillStyle = '#22c55e';
-    ctx.beginPath();
-    ctx.arc(bx, by, br, 0, Math.PI * 2);
+    ctx.arc(cx, cy, cr, 0, Math.PI * 2);
     ctx.fill();
 
-    // Checkmark
+    // Checkmark mark
     ctx.strokeStyle = '#ffffff';
-    ctx.lineWidth = Math.max(1, s * 0.008);
-    ctx.lineCap = 'round';
+    ctx.lineWidth = Math.max(1, s * 0.01);
     ctx.lineJoin = 'round';
     ctx.beginPath();
-    ctx.moveTo(bx - br*0.4, by);
-    ctx.lineTo(bx - br*0.05, by + br*0.35);
-    ctx.lineTo(bx + br*0.45, by - br*0.3);
+    ctx.moveTo(cx - cr * 0.42, cy);
+    ctx.lineTo(cx - cr * 0.1, cy + cr * 0.32);
+    ctx.lineTo(cx + cr * 0.5, cy - cr * 0.3);
     ctx.stroke();
 
     return canvas;

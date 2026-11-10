@@ -1,11 +1,14 @@
-const CACHE_NAME = 'catatanku-v1';
-const ASSETS_TO_CACHE = [
+const CACHE_NAME = 'catatanku-v2';
+const ESSENTIAL_ASSETS = [
     './',
     './index.html',
     './style.css',
     './app.js',
     './manifest.json',
-    './icons/icon.svg',
+    './icons/icon.svg'
+];
+
+const OPTIONAL_ASSETS = [
     './icons/icon-72.png',
     './icons/icon-96.png',
     './icons/icon-128.png',
@@ -16,12 +19,17 @@ const ASSETS_TO_CACHE = [
     './icons/icon-512.png'
 ];
 
-// Install — cache semua asset agar bisa offline
+// Install — cache asset utama agar bisa offline secara tangguh
 self.addEventListener('install', (event) => {
     event.waitUntil(
-        caches.open(CACHE_NAME).then((cache) => {
-            console.log('[SW] Caching semua asset untuk offline...');
-            return cache.addAll(ASSETS_TO_CACHE);
+        caches.open(CACHE_NAME).then(async (cache) => {
+            console.log('[SW] Caching asset utama untuk offline...');
+            // Asset penting harus tersimpan
+            await cache.addAll(ESSENTIAL_ASSETS);
+            // Asset opsional dicache tanpa menggagalkan proses install jika ada yang absen
+            await Promise.allSettled(
+                OPTIONAL_ASSETS.map((asset) => cache.add(asset).catch(() => {}))
+            );
         })
     );
     // Langsung aktifkan tanpa menunggu
