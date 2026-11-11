@@ -747,35 +747,162 @@ function registerServiceWorker() {
 }
 
 // ===== PWA Installation Prompt =====
-function setupInstallPrompt() {
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredInstallPrompt = e;
+function isRunningStandalone() {
+    return (window.matchMedia('(display-mode: standalone)').matches) || 
+           (window.navigator.standalone === true) || 
+           document.referrer.includes('android-app://');
+}
 
-        if (!localStorage.getItem('installDismissed')) {
-            installBanner.style.display = 'flex';
-        }
-    });
+function updateInstallUI() {
+    const sidebarInstallBtn = $('#sidebarInstallBtn');
+    if (isRunningStandalone()) {
+        if (sidebarInstallBtn) sidebarInstallBtn.style.display = 'none';
+        if (installBanner) installBanner.style.display = 'none';
+    } else {
+        if (sidebarInstallBtn) sidebarInstallBtn.style.display = 'flex';
+    }
+}
 
-    $('#installBtn').addEventListener('click', async () => {
-        if (!deferredInstallPrompt) return;
+async function triggerInstallPrompt() {
+    if (deferredInstallPrompt) {
         deferredInstallPrompt.prompt();
         const result = await deferredInstallPrompt.userChoice;
         if (result.outcome === 'accepted') {
             showToast('Aplikasi berhasil dipasang.');
+            if (installBanner) installBanner.style.display = 'none';
         }
         deferredInstallPrompt = null;
-        installBanner.style.display = 'none';
+        updateInstallUI();
+    } else {
+        openInstallHelp();
+    }
+}
+
+function openInstallHelp() {
+    const modal = $('#installHelpModal');
+    const body = $('#installHelpBody');
+    if (!modal || !body) return;
+
+    if (isRunningStandalone()) {
+        body.innerHTML = `
+            <p><strong>Aplikasi sudah terpasang.</strong></p>
+            <p style="margin-top:6px;font-size:0.84rem;color:var(--text-muted)">Catatanku saat ini sedang berjalan dalam mode aplikasi mandiri (PWA standalone).</p>
+        `;
+    } else if (window.location.protocol === 'file:') {
+        body.innerHTML = `
+            <p style="color:var(--warning);font-weight:600;margin-bottom:8px;">⚠️ Berjalan di Protokol file://</p>
+            <p style="font-size:0.84rem;line-height:1.6">PWA (Progressive Web App) memerlukan web server lokal (origin http://) agar browser mengaktifkan fitur instalasi dan service worker.</p>
+            <div class="install-note-box">
+                <strong>Cara menjalankan:</strong>
+                <ol style="margin-left:18px;margin-top:6px;line-height:1.6">
+                    <li>Buka terminal/PowerShell di folder project</li>
+                    <li>Jalankan perintah: <code>npx serve .</code></li>
+                    <li>Buka alamat yang tampil (contoh: <code>http://localhost:3000</code>) di Chrome</li>
+                </ol>
+            </div>
+        `;
+    } else {
+        const isIOS = /iPhone|iPad|iPod/i.test(navigator.userAgent);
+        const isAndroid = /Android/i.test(navigator.userAgent);
+
+        if (isIOS) {
+            body.innerHTML = `
+                <div class="install-guide-list">
+                    <div class="install-guide-step">
+                        <span class="install-step-num">1</span>
+                        <span>Ketuk tombol <strong>Bagikan (Share)</strong> di bilah navigasi bawah Safari.</span>
+                    </div>
+                    <div class="install-guide-step">
+                        <span class="install-step-num">2</span>
+                        <span>Gulir ke bawah dan pilih <strong>'Tambahkan ke Layar Utama' (Add to Home Screen)</strong>.</span>
+                    </div>
+                    <div class="install-guide-step">
+                        <span class="install-step-num">3</span>
+                        <span>Ketuk <strong>Tambah</strong> di pojok kanan atas.</span>
+                    </div>
+                </div>
+            `;
+        } else if (isAndroid) {
+            body.innerHTML = `
+                <div class="install-guide-list">
+                    <div class="install-guide-step">
+                        <span class="install-step-num">1</span>
+                        <span>Ketuk ikon <strong>Menu Titik Tiga (⋮)</strong> di pojok kanan atas Chrome.</span>
+                    </div>
+                    <div class="install-guide-step">
+                        <span class="install-step-num">2</span>
+                        <span>Pilih opsi <strong>'Pasang aplikasi'</strong> atau <strong>'Tambahkan ke Layar Utama'</strong>.</span>
+                    </div>
+                    <div class="install-guide-step">
+                        <span class="install-step-num">3</span>
+                        <span>Konfirmasi pemasangan dengan memilih <strong>Pasang</strong>.</span>
+                    </div>
+                </div>
+                <div class="install-note-box">Ikon aplikasi akan otomatis tampil di daftar aplikasi dan layar utama HP Anda.</div>
+            `;
+        } else {
+            body.innerHTML = `
+                <div class="install-guide-list">
+                    <div class="install-guide-step">
+                        <span class="install-step-num">1</span>
+                        <span>Klik ikon <strong>Pasang / Install</strong> di bilah alamat (URL bar) browser sebelah kanan.</span>
+                    </div>
+                    <div class="install-guide-step">
+                        <span class="install-step-num">2</span>
+                        <span>Atau buka <strong>Menu Titik Tiga (⋮)</strong> browser lalu pilih <strong>'Pasang Catatanku'</strong>.</span>
+                    </div>
+                </div>
+                <div class="install-note-box">Aplikasi akan terpasang di komputer dan dapat dibuka langsung tanpa browser.</div>
+            `;
+        }
+    }
+
+    modal.classList.add('active');
+}
+
+function setupInstallPrompt() {
+    updateInstallUI();
+
+    // Hapus batasan dismiss lama agar banner bisa tampil kembali jika didukung
+    localStorage.removeItem('installDismissed');
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault();
+        deferredInstallPrompt = e;
+        updateInstallUI();
+
+        if (!isRunningStandalone() && !sessionStorage.getItem('installBannerDismissed')) {
+            installBanner.style.display = 'flex';
+        }
     });
 
-    $('#dismissInstall').addEventListener('click', () => {
+    $('#installBtn')?.addEventListener('click', triggerInstallPrompt);
+    $('#sidebarInstallBtn')?.addEventListener('click', () => {
+        triggerInstallPrompt();
+        if (isMobileView()) closeSidebar();
+    });
+
+    $('#dismissInstall')?.addEventListener('click', () => {
         installBanner.style.display = 'none';
-        localStorage.setItem('installDismissed', 'true');
+        sessionStorage.setItem('installBannerDismissed', 'true');
+    });
+
+    $$('.close-install-modal').forEach(btn => {
+        btn.addEventListener('click', () => {
+            $('#installHelpModal')?.classList.remove('active');
+        });
+    });
+
+    $('#installHelpModal')?.addEventListener('click', (e) => {
+        if (e.target === $('#installHelpModal')) {
+            $('#installHelpModal').classList.remove('active');
+        }
     });
 
     window.addEventListener('appinstalled', () => {
-        installBanner.style.display = 'none';
+        if (installBanner) installBanner.style.display = 'none';
         deferredInstallPrompt = null;
+        updateInstallUI();
         showToast('Catatanku telah terpasang di perangkat.');
     });
 }

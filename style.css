@@ -448,7 +448,71 @@ body {
 
 .pwa-actions {
     display: flex;
+    flex-direction: column;
     gap: 6px;
+}
+
+.btn-sidebar-install {
+    width: 100%;
+    justify-content: center;
+    background: var(--surface-subtle);
+    border-color: var(--border-strong);
+    color: var(--text);
+    font-weight: 600;
+}
+
+.btn-sidebar-install:hover {
+    background: var(--surface-hover);
+}
+
+.pwa-data-actions {
+    display: flex;
+    gap: 6px;
+}
+
+.pwa-data-actions .btn {
+    flex: 1;
+}
+
+.install-guide-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    font-size: 0.88rem;
+    color: var(--text-secondary);
+    line-height: 1.5;
+}
+
+.install-guide-step {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+}
+
+.install-step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 22px;
+    height: 22px;
+    border-radius: 50%;
+    background: var(--surface-subtle);
+    border: 1px solid var(--border-strong);
+    font-size: 0.75rem;
+    font-weight: 600;
+    color: var(--text);
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.install-note-box {
+    margin-top: 8px;
+    padding: 10px 12px;
+    border-radius: var(--radius-sm);
+    background: var(--surface-subtle);
+    border: 1px solid var(--border);
+    font-size: 0.8rem;
+    color: var(--text-muted);
 }
 
 /* Sidebar Overlay */

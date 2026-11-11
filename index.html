@@ -165,19 +165,40 @@
           </div>
           <div class="pwa-actions">
             <button
-              class="btn btn-secondary btn-sm"
-              id="exportBtn"
-              title="Cadangkan catatan ke file JSON"
+              class="btn btn-secondary btn-sm btn-sidebar-install"
+              id="sidebarInstallBtn"
+              title="Pasang aplikasi Catatanku ke perangkat"
             >
-              Ekspor Note
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="2"
+              >
+                <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              <span>Pasang Aplikasi</span>
             </button>
-            <button
-              class="btn btn-secondary btn-sm"
-              id="importBtn"
-              title="Pulihkan catatan dari file JSON"
-            >
-              Impor Note
-            </button>
+            <div class="pwa-data-actions">
+              <button
+                class="btn btn-secondary btn-sm"
+                id="exportBtn"
+                title="Cadangkan catatan ke file JSON"
+              >
+                Ekspor Note
+              </button>
+              <button
+                class="btn btn-secondary btn-sm"
+                id="importBtn"
+                title="Pulihkan catatan dari file JSON"
+              >
+                Impor Note
+              </button>
+            </div>
           </div>
           <input
             type="file"
@@ -677,6 +698,41 @@
 
     <!-- Toast Notification -->
     <div class="toast-container" id="toastContainer" aria-live="polite"></div>
+
+    <!-- Modal: Install Guidance -->
+    <div
+      class="modal-overlay"
+      id="installHelpModal"
+      role="dialog"
+      aria-modal="true"
+    >
+      <div class="modal modal-sm">
+        <div class="modal-header">
+          <h2>Pasang Catatanku</h2>
+          <button
+            class="btn-icon close-install-modal"
+            aria-label="Tutup panduan pemasangan"
+          >
+            <svg
+              width="18"
+              height="18"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path d="M18 6L6 18M6 6l12 12" />
+            </svg>
+          </button>
+        </div>
+        <div class="modal-body" id="installHelpBody">
+          <!-- Dynamic guidance content injected by JS -->
+        </div>
+        <div class="modal-footer">
+          <button class="btn btn-primary close-install-modal">Mengerti</button>
+        </div>
+      </div>
+    </div>
 
     <!-- Reminder Alert -->
     <div

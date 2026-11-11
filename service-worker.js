@@ -1,11 +1,13 @@
-const CACHE_NAME = 'catatanku-v2';
+const CACHE_NAME = 'catatanku-v3';
 const ESSENTIAL_ASSETS = [
     './',
     './index.html',
     './style.css',
     './app.js',
     './manifest.json',
-    './icons/icon.svg'
+    './icons/icon.svg',
+    './icons/icon-192.png',
+    './icons/icon-512.png'
 ];
 
 const OPTIONAL_ASSETS = [
@@ -14,9 +16,7 @@ const OPTIONAL_ASSETS = [
     './icons/icon-128.png',
     './icons/icon-144.png',
     './icons/icon-152.png',
-    './icons/icon-192.png',
-    './icons/icon-384.png',
-    './icons/icon-512.png'
+    './icons/icon-384.png'
 ];
 
 // Install — cache asset utama agar bisa offline secara tangguh
